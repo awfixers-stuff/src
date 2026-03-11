@@ -1,0 +1,37 @@
+lints.workspace = true
+
+[package]
+name = "src-revwalk"
+version = "0.28.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate providing utilities for walking the revision graph"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+include = ["src/**/*", "LICENSE-*"]
+rust-version = "1.82"
+
+[lib]
+doctest = false
+
+[features]
+## Enable support for the SHA-1 hash by forwarding the feature to dependencies.
+sha1 = ["src-commitgraph/sha1", "src-hash/sha1", "src-hashtable/sha1", "src-object/sha1"]
+
+[dependencies]
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-error = { version = "^0.2.0", path = "../src-error" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-date = { version = "^0.15.0", path = "../src-date" }
+src-hashtable = { version = "^0.12.0", path = "../src-hashtable" }
+src-commitgraph = { version = "^0.34.0", path = "../src-commitgraph" }
+
+thiserror = "2.0.18"
+smallvec = "1.15.1"
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-hash = { path = "../src-hash", features = ["sha1", "sha256"] }
+
+[package.metadata.docs.rs]
+features = ["sha1"]

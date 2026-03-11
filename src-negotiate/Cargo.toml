@@ -1,0 +1,37 @@
+lints.workspace = true
+
+[package]
+name = "src-negotiate"
+version = "0.28.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate of the gitoxide project implementing negotiation algorithms"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+include = ["src/**/*", "LICENSE-*"]
+
+[lib]
+doctest = false
+test = false
+
+[features]
+## Enable support for the SHA-1 hash by forwarding the feature to dependencies.
+sha1 = ["src-commitgraph/sha1", "src-hash/sha1", "src-object/sha1", "src-revwalk/sha1"]
+
+[dependencies]
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-date = { version = "^0.15.0", path = "../src-date" }
+src-commitgraph = { version = "^0.34.0", path = "../src-commitgraph" }
+src-revwalk = { version = "^0.28.0", path = "../src-revwalk" }
+bitflags = "2"
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-odb = { path = "../src-odb" }
+src-ref = { path = "../src-ref" }
+src-hash = { path = "../src-hash", features = ["sha1", "sha256"] }
+
+[package.metadata.docs.rs]
+features = ["sha1"]

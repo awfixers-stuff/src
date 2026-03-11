@@ -1,0 +1,5 @@
+error: unrecognized subcommand 'receive'
+
+Usage: src free pack <COMMAND>
+
+For more information, try '--help'.

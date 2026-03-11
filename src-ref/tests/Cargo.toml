@@ -1,0 +1,35 @@
+lints.workspace = true
+
+[package]
+name = "src-ref-tests"
+version = "0.0.0"
+publish = false
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "Test the src-ref crate with feature toggles"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+
+[features]
+src-features-parallel = ["src-features/parallel"] # test sorted parallel loose file traversal
+serde = ["src-ref/serde"]
+
+[[test]]
+name = "refs"
+path = "refs/main.rs"
+
+[dev-dependencies]
+src-ref = { path = ".." }
+src-fs = { path = "../../src-fs" }
+src-features = { path = "../../src-features", features = ["walkdir"] }
+src-testtools = { path = "../../tests/tools" }
+src-discover = { path = "../../src-discover" }
+src-odb = { path = "../../src-odb" }
+src-actor = { path = "../../src-actor" }
+src-date = { path = "../../src-date" }
+src-hash = { path = "../../src-hash" }
+src-validate = { path = "../../src-validate" }
+src-lock = { path = "../../src-lock" }
+src-object = { path = "../../src-object" }
+insta = "1.46.3"

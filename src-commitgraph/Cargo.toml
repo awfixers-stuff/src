@@ -1,0 +1,49 @@
+lints.workspace = true
+
+[package]
+name = "src-commitgraph"
+version = "0.34.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+documentation = "https://git-scm.com/docs/commit-graph"
+license = "MIT OR Apache-2.0"
+description = "Read-only access to the git commitgraph file format"
+authors = ["Conor Davis <gitoxide@conor.fastmail.fm>", "Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+include = ["src/**/*", "LICENSE-*"]
+rust-version = "1.82"
+
+[lib]
+doctest = false
+
+[features]
+## Enable support for the SHA-1 hash by enabling the respective feature in the `src-hash` crate.
+sha1 = ["src-hash/sha1"]
+## Data structures implement `serde::Serialize` and `serde::Deserialize`
+serde = ["dep:serde", "src-hash/serde", "bstr/serde"]
+
+[dependencies]
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-chunk = { version = "^0.7.0", path = "../src-chunk" }
+src-error = { version = "^0.2.0", path = "../src-error" }
+
+bstr = { version = "1.12.0", default-features = false, features = ["std"] }
+memmap2 = "0.9.10"
+nonempty = "0.12.0"
+serde = { version = "1.0.114", optional = true, default-features = false, features = ["derive"] }
+
+document-features = { version = "0.2.0", optional = true }
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-date = { path = "../src-date" }
+src-hash = { path = "../src-hash", features = ["sha1", "sha256"] }
+
+[package.metadata.docs.rs]
+all-features = true
+features = ["sha1", "document-features"]
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Needed for `bstr/serde` feature forwarding, even though no direct `bstr` paths are referenced.
+    "bstr",
+]

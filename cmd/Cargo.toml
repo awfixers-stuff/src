@@ -1,0 +1,481 @@
+lints.workspace = true
+
+[package]
+name = "src"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+description = "Interact with git repositories just like git would"
+license = "MIT OR Apache-2.0"
+version = "0.80.0"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+include = ["src/**/*", "LICENSE-*"]
+# This MSRV is dictated by `firefox` to support the `helix` editor, but is now probably
+# effectively controlled by `jiff`, which also aligns with `regex`.
+rust-version = "1.82"
+
+[lib]
+doctest = false
+test = true
+
+[[example]]
+name = "clone"
+path = "examples/clone.rs"
+required-features = ["blocking-network-client"]
+
+[features]
+
+default = ["max-performance-safe", "comfort", "basic", "extras", "auto-chain-error", "sha1"]
+
+#! There are various categories of features which help to optimize performance and build times. `src` comes with 'batteries included' and everything is
+#! enabled as long as it doesn't sacrifice compatibility. Most users will be fine with that but will pay with higher compile times than necessary as they
+#! probably don't use all of these features.
+#!
+#! **Thus it's recommended to take a moment and optimize build times by choosing only those 'Components' that you require.** *'Performance' relevant features should
+#! be chosen next to maximize efficiency.*
+#!
+#! #### Application Developers
+#!
+#! These are considered the end-users, all they need to tune is `Performance` features to optimize the efficiency of their app, assuming they don't use `src`
+#! directly. Otherwise, see the `Library Developers` paragraph.
+#!
+#! In order to configure a crate that isn't a direct dependency, one has to make it a direct dependency. We recommend
+#! `src-for-configuration = { package = "src", version = "X.Y.Z", features = […] }` to make clear this dependency isn't used in code.
+#!
+#! #### Library Developers
+#!
+#! As a developer of a library, you should start out with `src = { version = "X.Y.Z", default-features = false }` and add components as you see fit.
+#! For best compatibility, **do not activate `max-performance-safe`** or any other performance options.
+#!
+#! #### Bundles
+#!
+#! A bundle is a set of related feature toggles which can be activated with a single name that acts as a group.
+#! Bundles are for convenience only and bear no further meaning beyond the cargo manifest file.
+
+## More fundamental components that most will be able to make good use of.
+basic = ["blob-diff", "revision", "index"]
+
+## Various additional features and capabilities that are not necessarily part of what most users would need.
+extras = [
+    "worktree-stream",
+    "worktree-archive",
+    "revparse-regex",
+    "mailmap",
+    "excludes",
+    "attributes",
+    "worktree-mutation",
+    "credentials",
+    "interrupt",
+    "status",
+    "dirwalk",
+    "blame"
+]
+
+## A collection of features that need a larger MSRV, and thus are disabled by default.
+## * `blob-merge` should be in extras, but needs `tree-editor` for convenience.
+need-more-recent-msrv = ["merge", "tree-editor"]
+
+## Various progress-related features that improve the look of progress message units.
+comfort = [
+    "src-features/progress-unit-bytes",
+    "src-features/progress-unit-human-numbers",
+]
+
+#! #### Hashes
+#!
+#! Support for various hash algorithms is controlled here. The idea is to allow applications to
+#! compile in only the ones they need, which is why within the entire `src` stack there is no
+#! crate that sets an algorithm, except for the top-level `src` crate for convenience.
+#!
+#! At least one hash algorithm must be enabled for compilation to succeed.
+
+## Enable support for the SHA-1 hash throughout the `src` stack.
+sha1 = [
+    "src-archive?/sha1",
+    "src-blame?/sha1",
+    "src-commitgraph/sha1",
+    "src-config/sha1",
+    "src-diff/sha1",
+    "src-dir?/sha1",
+    "src-discover/sha1",
+    "src-filter?/sha1",
+    "src-hash/sha1",
+    "src-hashtable/sha1",
+    "src-index?/sha1",
+    "src-merge?/sha1",
+    "src-negotiate?/sha1",
+    "src-object/sha1",
+    "src-odb/sha1",
+    "src-pack/sha1",
+    "src-protocol/sha1",
+    "src-ref/sha1",
+    "src-refspec/sha1",
+    "src-revision/sha1",
+    "src-revwalk/sha1",
+    "src-shallow/sha1",
+    "src-status?/sha1",
+    "src-submodule?/sha1",
+    "src-traverse/sha1",
+    "src-worktree?/sha1",
+    "src-worktree-state?/sha1",
+    "src-worktree-stream?/sha1",
+]
+
+#! #### Components
+#!
+#! A component is a distinct feature which may be comprised of one or more methods around a particular topic.
+#! Providers of libraries should only activate the components they need.
+
+## Provide a top-level `command` module that helps with spawning commands similarly to `git`.
+command = ["dep:src-command"]
+
+## Obtain information similar to `git status`.
+status = ["src-status", "dirwalk", "index", "blob-diff", "src-diff/index"]
+
+## Utilities for interrupting computations and cleaning up tempfiles.
+interrupt = ["dep:signal-hook", "src-tempfile/signals", "dep:parking_lot"]
+
+## Access to `.git/index` files.
+index = ["dep:src-index"]
+
+## Support directory walks with Git-style annoations.
+dirwalk = ["dep:src-dir", "attributes", "excludes"]
+
+## Access to credential helpers, which provide credentials for URLs.
+# Note that `src-negotiate` just piggibacks here, as 'credentials' is equivalent to 'fetch & push' right now.
+credentials = ["dep:src-credentials", "dep:src-prompt", "dep:src-negotiate"]
+
+## Various ways to alter the worktree makeup by checkout and reset.
+worktree-mutation = ["attributes", "dep:src-worktree-state"]
+
+## Retrieve a worktree stack for querying exclude information
+excludes = ["dep:src-ignore", "dep:src-worktree", "index"]
+
+## Provide facilities to edit trees conveniently.
+##
+## Not that currently, this requires [Rust 1.75](https://caniuse.rs/features/return_position_impl_trait_in_trait).
+## This feature toggle is likely going away then.
+tree-editor = []
+
+## Query attributes and excludes. Enables access to pathspecs, worktree checkouts, filter-pipelines and submodules.
+attributes = [
+    "excludes",
+    "dep:src-filter",
+    "dep:src-pathspec",
+    "dep:src-attributes",
+    "dep:src-submodule",
+    "src-worktree?/attributes",
+    "command",
+]
+
+## Add support for mailmaps, as way of determining the final name of commmiters and authors.
+mailmap = ["dep:src-mailmap", "revision"]
+
+## Make revspec parsing possible, as well describing revision.
+revision = ["src-revision/describe", "src-revision/merge_base", "index"]
+
+## If enabled, revspecs now support the regex syntax like `@^{/^.*x}`. Otherwise, only substring search is supported.
+## This feature does increase compile time for niche-benefit, but is required for fully git-compatible revspec parsing.
+revparse-regex = ["regex", "revision"]
+
+## Make it possible to diff blobs line by line. Note that this feature is integral for implementing tree-diffs as well due to the handling of rename-tracking,
+## which relies on line-by-line diffs in some cases.
+blob-diff = ["src-diff/blob", "attributes"]
+
+## Add functions to specifically merge files, using the standard three-way merge that git offers.
+merge = ["tree-editor", "blob-diff", "dep:src-merge", "attributes"]
+
+## Add blame command similar to `git blame`.
+blame = ["dep:src-blame", "blob-diff"]
+
+## Make it possible to turn a tree into a stream of bytes, which can be decoded to entries and turned into various other formats.
+worktree-stream = ["src-worktree-stream", "attributes"]
+
+## Create archives from a tree in the repository, similar to what `git archive` does.
+##
+## Note that we disable all default features which strips it off all container support, like `tar` and `zip`.
+## Your application should add it as dependency and re-activate the desired features.
+worktree-archive = ["src-archive", "worktree-stream", "attributes"]
+
+#! #### Mutually Exclusive Network Client
+#!
+#! Either `async-*` or `blocking-*` versions of these toggles may be enabled at a time.
+#! For this reason, these must be chosen by the user of the library and can't be pre-selected.
+#! Making a choice here also affects which crypto-library ends up being used.
+
+## Make `src-protocol` available along with an async client.
+async-network-client = [
+    "src-protocol/async-client",
+    "src-pack/streaming-input",
+    "dep:src-transport",
+    "attributes",
+    "credentials",
+]
+## Use this if your crate uses `async-std` as runtime, and enable basic runtime integration when connecting to remote servers via the `git://` protocol.
+async-network-client-async-std = [
+    "async-std",
+    "async-network-client",
+    "src-transport/async-std",
+]
+## Make `src-protocol` available along with a blocking client, providing access to the `file://`, `git://` and `ssh://` transports.
+blocking-network-client = [
+    "src-protocol/blocking-client",
+    "src-pack/streaming-input",
+    "dep:src-transport",
+    "attributes",
+    "credentials",
+]
+## Stacks with `blocking-network-client` to provide support for HTTP/S using **curl**, and implies blocking networking as a whole, making the `https://` transport available.
+blocking-http-transport-curl = [
+    "blocking-network-client",
+    "src-transport/http-client-curl",
+]
+## Stacks with `blocking-http-transport-curl` and also enables the `rustls` backend to avoid `openssl`.
+## This feature takes precedence over `http-client-curl-rust-ssl`.
+blocking-http-transport-curl-rustls = [
+    "blocking-http-transport-curl",
+    "src-transport/http-client-curl-rust-tls",
+]
+## Stacks with `blocking-http-transport-curl` and also enables the `openssl` backend.
+blocking-http-transport-curl-openssl = [
+    "blocking-http-transport-curl",
+    "src-transport/http-client-curl-openssl",
+]
+## Stacks with `blocking-network-client` to provide support for HTTP/S using **reqwest**, and implies blocking networking as a whole, making the `https://` transport available.
+## Note that `reqwest`'s default features are not enabled, allowing custom configuration of e.g. the TLS backend by adding it as explicit dependency.
+blocking-http-transport-reqwest = [
+    "blocking-network-client",
+    "src-transport/http-client-reqwest",
+]
+## Stacks with `blocking-http-transport-reqwest` and enables `https://` via the `rustls` crate.
+blocking-http-transport-reqwest-rust-tls = [
+    "blocking-http-transport-reqwest",
+    "src-transport/http-client-reqwest-rust-tls",
+]
+## Stacks with `blocking-http-transport-reqwest` and enables `https://` via the `rustls` crate.
+## This also makes use of `trust-dns` to avoid `getaddrinfo`, but note it comes with its own problems.
+blocking-http-transport-reqwest-rust-tls-trust-dns = [
+    "blocking-http-transport-reqwest",
+    "src-transport/http-client-reqwest-rust-tls-trust-dns",
+]
+## Stacks with `blocking-http-transport-reqwest` and enables `https://` via the `native-tls` crate.
+blocking-http-transport-reqwest-native-tls = [
+    "blocking-http-transport-reqwest",
+    "src-transport/http-client-reqwest-native-tls",
+]
+
+
+#! #### Performance
+#!
+#! The reason these features exist is to allow optimization for compile time and optimize for compatibility by default. This means that some performance options around
+#! ZIP might not compile on all platforms, so it depends on the end-user who compiles the application to chose these based on their needs.
+
+## Activate features that maximize performance, like using threads, but leave everything else that might affect compatibility out to allow users more fine-grained
+## control.
+## No C toolchain is involved.
+max-control = ["parallel", "pack-cache-lru-static", "pack-cache-lru-dynamic"]
+
+## Deprecated: src always uses zlib-rs, so this is equivalent to `max-performance`
+max-performance-safe = ["max-control"]
+
+## The tempfile registry uses a better implementation of a thread-safe hashmap, relying on an external crate.
+## This may be useful when tempfiles are created and accessed in a massively parallel fashion and you know that this is indeed faster than
+## the simpler implementation that is the default.
+hp-tempfile-registry = ["src-tempfile/hp-hashmap"]
+
+## Make certain data structure threadsafe (or `Sync`) to facilitate multithreading. Further, many algorithms will now use multiple threads by default.
+##
+## If unset, most of `src` can only be used in a single thread as data structures won't be `Send` anymore.
+parallel = ["src-features/parallel"]
+
+## Provide a fixed-size allocation-free LRU cache for packs. It's useful if caching is desired while keeping the memory footprint
+## for the LRU-cache itself low.
+pack-cache-lru-static = ["src-pack/pack-cache-lru-static"]
+
+## Provide a hash-map based LRU cache whose eviction is based a memory cap calculated from object data.
+pack-cache-lru-dynamic = ["src-pack/pack-cache-lru-dynamic"]
+
+## Enable all features required for performance.
+max-performance = ["max-performance-safe"]
+
+## Deprecated: src always uses zlib-rs.
+zlib-ng = ["src-features/zlib"]
+
+## Deprecated: src always uses zlib-rs.
+zlib-rs = ["src-features/zlib"]
+
+## Deprecated: src always uses zlib-rs.
+zlib-ng-compat = ["src-features/zlib"]
+
+## Deprecated: src always uses zlib-rs.
+zlib-stock = ["src-features/zlib"]
+
+#! #### Other
+#!
+#! The catch-all of feature toggles.
+
+## All [`src::Error`](crate::Error) will produce error chains, which makes them work as expected in conjunction with `anyhow`.
+auto-chain-error = ["src-error/auto-chain-error"]
+
+## The opposite of `auto-chain-error`. Use it to override `auto-chain-error`.
+tree-error = ["src-error/tree-error"]
+
+## Enable tracing using the `tracing` crate for coarse tracing.
+tracing = ["src-features/tracing"]
+
+## Enable tracing using the `tracing` crate for detailed tracing. Also enables coarse tracing.
+tracing-detail = ["src-features/tracing-detail", "tracing"]
+
+## When parsing objects by default errors will only be available on the granularity of success or failure, and with the above flag enabled
+## details information about the error location will be collected.
+## Use it in applications which expect broken or invalid objects or for debugging purposes.
+## Incorrectly formatted objects aren't very common otherwise.
+verbose-object-parsing-errors = ["src-object/verbose-object-parsing-errors"]
+
+## Data structures implement `serde::Serialize` and `serde::Deserialize`.
+serde = [
+    "dep:serde",
+    "src-pack/serde",
+    "src-object/serde",
+    "src-protocol/serde",
+    "src-transport?/serde",
+    "src-ref/serde",
+    "src-odb/serde",
+    "src-index?/serde",
+    "src-mailmap?/serde",
+    "src-url/serde",
+    "src-attributes?/serde",
+    "src-ignore?/serde",
+    "src-revision/serde",
+    "src-worktree?/serde",
+    "src-commitgraph/serde",
+    "src-credentials?/serde",
+]
+
+## Re-export the progress tree root which allows to obtain progress from various functions which take `impl src::Progress`.
+## Applications which want to display progress will probably need this implementation.
+progress-tree = ["prodash/progress-tree"]
+
+## Print debugging information about usage of object database caches, useful for tuning cache sizes.
+cache-efficiency-debug = ["src-features/cache-efficiency-debug"]
+
+[dependencies]
+src-error = { version = "^0.2.0", path = "../src-error" }
+src-utils = { version = "^0.3.1", path = "../src-utils" }
+src-fs = { version = "^0.19.1", path = "../src-fs" }
+src-ref = { version = "^0.60.0", path = "../src-ref" }
+src-discover = { version = "^0.48.0", path = "../src-discover" }
+src-tempfile = { version = "^21.0.0", path = "../src-tempfile", default-features = false }
+src-lock = { version = "^21.0.0", path = "../src-lock" }
+src-validate = { version = "^0.11.0", path = "../src-validate" }
+src-sec = { version = "^0.13.1", path = "../src-sec" }
+src-date = { version = "^0.15.0", path = "../src-date" }
+src-refspec = { version = "^0.38.0", path = "../src-refspec" }
+src-filter = { version = "^0.27.0", path = "../src-filter", optional = true }
+src-dir = { version = "^0.22.0", path = "../src-dir", optional = true }
+
+src-config = { version = "^0.53.0", path = "../src-config" }
+src-odb = { version = "^0.77.0", path = "../src-odb" }
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-shallow = { version = "^0.9.0", path = "../src-shallow" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-actor = { version = "^0.40.0", path = "../src-actor" }
+src-pack = { version = "^0.67.0", path = "../src-pack", default-features = false, features = [
+    "object-cache-dynamic",
+] }
+src-revision = { version = "^0.42.0", path = "../src-revision", default-features = false }
+src-revwalk = { version = "^0.28.0", path = "../src-revwalk" }
+src-negotiate = { version = "^0.28.0", path = "../src-negotiate", optional = true }
+
+src-path = { version = "^0.11.1", path = "../src-path" }
+src-url = { version = "^0.35.2", path = "../src-url" }
+src-traverse = { version = "^0.54.0", path = "../src-traverse" }
+src-diff = { version = "^0.60.0", path = "../src-diff", default-features = false }
+src-merge = { version = "^0.13.0", path = "../src-merge", default-features = false, optional = true }
+src-mailmap = { version = "^0.32.0", path = "../src-mailmap", optional = true }
+src-features = { version = "^0.46.1", path = "../src-features", features = [
+    "progress",
+    "once_cell",
+] }
+src-trace = { version = "^0.1.18", path = "../src-trace" }
+
+src-glob = { version = "^0.24.0", path = "../src-glob" }
+src-credentials = { version = "^0.37.0", path = "../src-credentials", optional = true }
+src-prompt = { version = "^0.14.0", path = "../src-prompt", optional = true }
+src-index = { version = "^0.48.0", path = "../src-index", optional = true }
+src-attributes = { version = "^0.31.0", path = "../src-attributes", optional = true }
+src-ignore = { version = "^0.19.0", path = "../src-ignore", optional = true }
+src-worktree = { version = "^0.49.0", path = "../src-worktree", optional = true, default-features = false }
+src-worktree-state = { version = "^0.27.0", path = "../src-worktree-state", optional = true }
+src-hashtable = { version = "^0.12.0", path = "../src-hashtable" }
+src-commitgraph = { version = "^0.34.0", path = "../src-commitgraph" }
+src-pathspec = { version = "^0.16.0", path = "../src-pathspec", optional = true }
+src-submodule = { version = "^0.27.0", path = "../src-submodule", optional = true }
+src-status = { version = "^0.27.0", path = "../src-status", optional = true, features = [
+    "worktree-rewrites",
+] }
+src-command = { version = "^0.8.0", path = "../src-command", optional = true }
+
+src-worktree-stream = { version = "^0.29.0", path = "../src-worktree-stream", optional = true }
+src-archive = { version = "^0.29.0", path = "../src-archive", default-features = false, optional = true }
+src-blame = { version = "^0.10.0", path = "../src-blame", optional = true }
+
+# For communication with remotes
+src-protocol = { version = "^0.58.0", path = "../src-protocol" }
+src-transport = { version = "^0.55.0", path = "../src-transport", optional = true }
+
+# Just to get the progress-tree feature
+prodash = { version = "31.0.0", optional = true, features = ["progress-tree"] }
+signal-hook = { version = "0.4.3", default-features = false, optional = true }
+thiserror = "2.0.18"
+nonempty = "0.12.0"
+serde = { version = "1.0.114", optional = true, default-features = false, features = [
+    "derive",
+] }
+smallvec = "1.15.1"
+async-std = { version = "1.12.0", optional = true }
+
+## For use in rev-parse, which provides searching commits by running a regex on their message.
+##
+## If disabled, the text will be search verbatim in any portion of the commit message, similar to
+## how a simple unanchored regex of only 'normal' characters would work.
+regex = { version = "1.12.3", optional = true, default-features = false, features = [
+    "std",
+] }
+
+# for `interrupt` feature
+parking_lot = { version = "0.12.4", optional = true }
+
+document-features = { version = "0.2.0", optional = true }
+
+[dev-dependencies]
+# For additional features that aren't enabled by default due to MSRV
+src = { path = ".", default-features = false, features = [
+    "need-more-recent-msrv", "tree-error"
+] }
+src-hash = { version = "^0.22.0", path = "../src-hash", features = ["sha256"] }
+pretty_assertions = "1.4.0"
+src-testtools = { path = "../tests/tools" }
+is_ci = "1.1.1"
+anyhow = "1"
+walkdir = "2.3.2"
+serial_test = { version = "3.4.0", default-features = false }
+async-std = { version = "1.12.0", features = ["attributes"] }
+termtree = "1.0.0"
+insta = "1.46.3"
+
+[package.metadata.docs.rs]
+features = [
+    "sha1",
+    "document-features",
+    "max-performance",
+    "blocking-network-client",
+    "blocking-http-transport-curl",
+    "need-more-recent-msrv",
+    "serde",
+]
+
+[package.metadata.cargo-machete]
+ignored = [
+    # Feature forwarding uses `prodash/*` in Cargo feature wiring without direct crate references.
+    "prodash",
+]

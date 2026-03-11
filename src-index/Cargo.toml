@@ -1,0 +1,67 @@
+lints.workspace = true
+
+[package]
+name = "src-index"
+version = "0.48.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A work-in-progress crate of the gitoxide project dedicated implementing the git index file"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+include = ["src/**/*", "LICENSE-*", "README.md"]
+rust-version = "1.82"
+autotests = false
+
+
+[lib]
+doctest = false
+test = true
+
+[features]
+## Enable support for the SHA-1 hash by enabling the respective feature in the `src-hash` crate.
+sha1 = ["src-hash/sha1"]
+## Data structures implement `serde::Serialize` and `serde::Deserialize`.
+serde = ["dep:serde", "smallvec/serde", "src-hash/serde"]
+
+[dependencies]
+src-features = { version = "^0.46.1", path = "../src-features", features = [
+    "progress",
+] }
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-bitmap = { version = "^0.3.0", path = "../src-bitmap" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-validate = { version = "^0.11.0", path = "../src-validate" }
+src-traverse = { version = "^0.54.0", path = "../src-traverse" }
+src-lock = { version = "^21.0.0", path = "../src-lock" }
+src-fs = { version = "^0.19.1", path = "../src-fs" }
+src-utils = { version = "^0.3.1", path = "../src-utils" }
+
+hashbrown = "0.16.0"
+fnv = "1.0.7"
+thiserror = "2.0.18"
+memmap2 = "0.9.10"
+filetime = "0.2.27"
+bstr = { version = "1.12.0", default-features = false }
+
+serde = { version = "1.0.114", optional = true, default-features = false, features = [
+    "derive",
+] }
+smallvec = "1.15.1"
+itoa = "1.0.17"
+bitflags = "2"
+
+document-features = { version = "0.2.0", optional = true }
+
+[target.'cfg(not(windows))'.dependencies]
+rustix = { version = "1.1.2", default-features = false, features = [
+    "std",
+    "fs",
+] }
+libc = { version = "0.2.182" }
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-hash = { path = "../src-hash", features = ["sha1", "sha256"] }
+
+[package.metadata.docs.rs]
+features = ["sha1", "document-features", "serde"]

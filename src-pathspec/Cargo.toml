@@ -1,0 +1,29 @@
+lints.workspace = true
+
+[package]
+name = "src-pathspec"
+version = "0.16.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate of the gitoxide project dealing magical pathspecs"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+include = ["src/**/*", "LICENSE-*", "README.md"]
+
+[lib]
+doctest = false
+
+[dependencies]
+src-glob = { version = "^0.24.0", path = "../src-glob" }
+src-path = { version = "^0.11.1", path = "../src-path" }
+src-attributes = { version = "^0.31.0", path = "../src-attributes" }
+src-config-value = { version = "^0.17.1", path = "../src-config-value" }
+
+bstr = { version = "1.12.0", default-features = false, features = ["std"] }
+bitflags = "2"
+thiserror = "2.0.18"
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+serial_test = "3.4.0"

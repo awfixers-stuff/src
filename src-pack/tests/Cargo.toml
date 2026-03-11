@@ -1,0 +1,31 @@
+lints.workspace = true
+
+[package]
+name = "src-pack-tests"
+version = "0.0.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+license = "MIT OR Apache-2.0"
+description = "Tests for the src-pack crate"
+edition = "2021"
+rust-version = "1.82"
+
+[features]
+src-features-parallel = ["src-features/parallel"]
+all-features = ["src-pack/object-cache-dynamic", "src-pack/pack-cache-lru-dynamic", "src-pack/pack-cache-lru-static"]
+
+[[test]]
+name = "pack"
+path = "integrate.rs"
+
+[dev-dependencies]
+src-pack = { path = "..", features = ["generate", "streaming-input"] }
+src-features = { path = "../../src-features" }
+src-testtools = { path = "../../tests/tools" }
+src-odb = { path = "../../src-odb" }
+bstr = { version = "1.12.0", default-features = false, features = ["std"] }
+maplit = "1.0.2"
+src-object = { path = "../../src-object" }
+src-traverse = { path = "../../src-traverse" }
+src-hash = { path = "../../src-hash", features = ["sha256"] }
+memmap2 = "0.9.10"

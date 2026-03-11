@@ -1,0 +1,52 @@
+lints.workspace = true
+
+[package]
+name = "src-ref"
+version = "0.60.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate to handle git references"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+include = ["src/**/*", "LICENSE-*"]
+rust-version = "1.82"
+autotests = false
+
+[lib]
+doctest = false
+test = true
+
+[features]
+## Enable support for the SHA-1 hash by enabling the respective feature in the `src-hash` crate.
+sha1 = ["src-hash/sha1"]
+## Data structures implement `serde::Serialize` and `serde::Deserialize`.
+serde = ["dep:serde", "src-hash/serde", "src-actor/serde", "src-object/serde"]
+
+[dependencies]
+src-features = { version = "^0.46.1", path = "../src-features", features = ["walkdir"] }
+src-fs = { version = "^0.19.1", path = "../src-fs" }
+src-path = { version = "^0.11.1", path = "../src-path" }
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-utils = { version = "^0.3.1", path = "../src-utils" }
+src-validate = { version = "^0.11.0", path = "../src-validate" }
+src-actor = { version = "^0.40.0", path = "../src-actor" }
+src-lock = { version = "^21.0.0", path = "../src-lock" }
+src-tempfile = { version = "^21.0.0", default-features = false, path = "../src-tempfile" }
+
+thiserror = "2.0.18"
+winnow = { version = "0.7.14", features = ["simd"] }
+serde = { version = "1.0.114", optional = true, default-features = false, features = ["derive"] }
+
+# packed refs
+memmap2 = "0.9.10"
+
+document-features = { version = "0.2.1", optional = true }
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-date = { path = "../src-date" }
+src-hash = { path = "../src-hash", features = ["sha1", "sha256"] }
+
+[package.metadata.docs.rs]
+features = ["sha1", "document-features", "serde"]

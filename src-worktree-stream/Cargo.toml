@@ -1,0 +1,40 @@
+lints.workspace = true
+
+[package]
+name = "src-worktree-stream"
+version = "0.29.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "generate a byte-stream from a git-tree"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+include = ["src/**/*", "LICENSE-*"]
+
+[lib]
+doctest = false
+
+[features]
+## Enable support for the SHA-1 hash by forwarding the feature to dependencies.
+sha1 = ["src-filter/sha1", "src-hash/sha1", "src-object/sha1", "src-traverse/sha1"]
+
+[dependencies]
+src-features = { version = "^0.46.1", path = "../src-features", features = ["progress", "io-pipe"] }
+src-hash = { version = "^0.22.1", path = "../src-hash" }
+src-object = { version = "^0.57.0", path = "../src-object" }
+src-attributes = { version = "^0.31.0", path = "../src-attributes" }
+src-filter = { version = "^0.27.0", path = "../src-filter" }
+src-traverse = { version = "^0.54.0", path = "../src-traverse" }
+src-fs = { version = "^0.19.1", path = "../src-fs" }
+src-path = { version = "^0.11.1", path = "../src-path" }
+
+src-error = { version = "^0.2.0", path = "../src-error" }
+parking_lot = "0.12.4"
+
+[dev-dependencies]
+src-testtools = { path = "../tests/tools" }
+src-odb = { path = "../src-odb" }
+src-worktree = { path = "../src-worktree", default-features = false, features = ["attributes"] }
+
+[package.metadata.docs.rs]
+features = ["sha1"]

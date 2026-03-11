@@ -1,0 +1,38 @@
+lints.workspace = true
+
+[package]
+name = "src-status-tests"
+version = "0.0.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate to drive src-status tests with different features"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>", "Pascal Kuthe <pascal.kuthe@semimod.de>"]
+edition = "2021"
+publish = false
+rust-version = "1.82"
+
+[[test]]
+name = "status"
+path = "status/mod.rs"
+
+[features]
+src-features-parallel = ["src-features/parallel"]
+
+[dev-dependencies]
+src-status = { path = "..", features = ["worktree-rewrites"] }
+src-testtools = { path = "../../tests/tools" }
+src-index = { path = "../../src-index" }
+src-fs = { path = "../../src-fs" }
+src-diff = { path = "../../src-diff" }
+src-filter = { path = "../../src-filter" }
+src-path = { path = "../../src-path" }
+src-dir = { path = "../../src-dir" }
+src-odb = { path = "../../src-odb" }
+src-hash = { path = "../../src-hash" }
+src-object = { path = "../../src-object" }
+src-features = { path = "../../src-features", features = ["parallel"] }
+src-pathspec = { path = "../../src-pathspec" }
+src-worktree = { path = "../../src-worktree" }
+filetime = "0.2.27"
+bstr = { version = "1.12.0", default-features = false }
+pretty_assertions = "1.4.0"

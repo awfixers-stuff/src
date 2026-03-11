@@ -1,0 +1,38 @@
+lints.workspace = true
+
+[package]
+name = "src-worktree-tests"
+version = "0.0.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate for testing the src-worktree crate with feature toggles"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+publish = false
+
+[[test]]
+name = "integrate"
+path = "integrate.rs"
+
+[features]
+src-features-parallel = ["src-features/parallel"]
+
+[dev-dependencies]
+src-worktree = { path = "..", features = ["attributes"] }
+src-index = { path = "../../src-index" }
+src-fs = { path = "../../src-fs" }
+src-hash = { path = "../../src-hash", features = ["sha256"] }
+src-object = { path = "../../src-object" }
+src-glob = { path = "../../src-glob" }
+src-path = { path = "../../src-path" }
+src-attributes = { path = "../../src-attributes" }
+src-ignore = { path = "../../src-ignore" }
+src-features = { path = "../../src-features" }
+src-discover = { path = "../../src-discover" }
+
+bstr = { version = "1.12.0", default-features = false }
+
+src-testtools = { path = "../../tests/tools" }
+src-odb = { path = "../../src-odb" }
+symlink = "0.1.0"

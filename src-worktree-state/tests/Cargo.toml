@@ -1,0 +1,34 @@
+lints.workspace = true
+
+[package]
+name = "src-worktree-state-tests"
+version = "0.0.0"
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "A crate for running tests with feature toggles on src-worktree-state"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+publish = false
+rust-version = "1.82"
+
+[[test]]
+name = "worktree"
+path = "worktree.rs"
+
+[features]
+src-features-parallel = ["src-features/parallel"]
+
+[dev-dependencies]
+src-worktree-state = { path = ".." }
+src-object = { path = "../../src-object" }
+src-discover = { path = "../../src-discover" }
+src-filter = { path = "../../src-filter" }
+src-index = { path = "../../src-index" }
+src-hash = { path = "../../src-hash", features = ["sha256"] }
+src-fs = { path = "../../src-fs" }
+src-features = { path = "../../src-features" }
+src-testtools = { path = "../../tests/tools" }
+src-odb = { path = "../../src-odb" }
+symlink = "0.1.0"
+
+walkdir = "2.3.2"

@@ -1,0 +1,29 @@
+lints.workspace = true
+
+[package]
+name = "src-index-tests"
+version = "0.0.0"
+publish = false
+repository = "https://github.com/GitoxideLabs/gitoxide"
+license = "MIT OR Apache-2.0"
+description = "Integration tests for src-index"
+authors = ["Sebastian Thiel <sebastian.thiel@icloud.com>"]
+edition = "2021"
+rust-version = "1.82"
+
+[[test]]
+name = "integrate"
+path = "integrate.rs"
+
+[features]
+src-features-parallel = ["src-features/parallel"]
+
+[dev-dependencies]
+src-index = { path = ".." }
+src-features = { path = "../../src-features", features = ["progress"] }
+src-testtools = { path = "../../tests/tools" }
+src-odb = { path = "../../src-odb" }
+src-object = { path = "../../src-object" }
+src-hash = { path = "../../src-hash", features = ["sha256"] }
+filetime = "0.2.27"
+bstr = { version = "1.12.0", default-features = false }
