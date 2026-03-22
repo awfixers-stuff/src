@@ -23,7 +23,7 @@ FROM bootstrap_build_deps AS bootstrap_builder
       && apk del .rust-builder
 
 
-FROM alpine:3.13.3 AS pipeline
+FROM alpine:3.23.3 AS pipeline
   # hadolint ignore=SC2016
   RUN apk upgrade --update-cache --available \
       && { \
