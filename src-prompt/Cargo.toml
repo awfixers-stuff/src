@@ -29,4 +29,4 @@ src-testtools = { path = "../tests/tools" }
 serial_test = { version = "3.4.0", default-features = false }
 
 [target.'cfg(any(target_os = "linux", target_os = "freebsd", target_os = "macos"))'.dev-dependencies]
-expectrl = "0.7.0"
+expectrl = "0.8.0"
